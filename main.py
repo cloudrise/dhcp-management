@@ -1,6 +1,7 @@
 import mysql.connector
 import argparse
 import os
+import csv
 import private.config ## edit here to config
 
 
@@ -107,6 +108,15 @@ def clean_user_list():
     connection.close()
     print("Done. Remember to add someone before restart!")
 
+def generate_report():
+    print("Gettin user list...")
+    user_list = get_all_users()
+    print("Generating monthly report...")
+    with open('BarbaraList.csv', 'w', newline='') as write_file:
+        writer = csv.writer(write_file)
+        writer.writerows(user_list)
+    write_file.close()
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("action", help="Select one of the following action: list")
@@ -120,6 +130,8 @@ def main():
         generate_user_list_file()
     elif args.action == "clean":
         clean_user_list()
+    elif args.action == "report":
+        generate_report()
 
 if __name__ == '__main__':
     main()
