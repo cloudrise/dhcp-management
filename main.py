@@ -110,15 +110,21 @@ def clean_user_list():
     print("Done. Remember to add someone before restart!")
 
 def generate_report():
+    # Get all users
     print("Gettin user list...")
     user_list = get_all_users()
+
+    # Construct file name
     print("Generating monthly report...")
     full_date = datetime.datetime.now()
     date = full_date.strftime("%m.%Y")
     file_name = private.config.PATH_MONTHLY_REPORTS + private.config.SH_NAME + date + ".csv"
+
+    # Save to CSV
     with open(file_name, 'w', newline='') as write_file:
         writer = csv.writer(write_file)
-        writer.writerows(user_list)
+        for user in user_list:
+            writer.writerow([user[0], user[1], user[2], user[4], format_printable_mac(user[3])]) # Id, First Name, Last Name, MAC, IP
     write_file.close()
     print("Report has been generated: %s" % file_name)
 
