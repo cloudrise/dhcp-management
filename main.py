@@ -2,6 +2,7 @@ import mysql.connector
 import argparse
 import os
 import csv
+import datetime
 import private.config ## edit here to config
 
 
@@ -112,10 +113,14 @@ def generate_report():
     print("Gettin user list...")
     user_list = get_all_users()
     print("Generating monthly report...")
-    with open('BarbaraList.csv', 'w', newline='') as write_file:
+    full_date = datetime.datetime.now()
+    date = full_date.strftime("%m.%Y")
+    file_name = private.config.PATH_MONTHLY_REPORTS + private.config.SH_NAME + date + ".csv"
+    with open(file_name, 'w', newline='') as write_file:
         writer = csv.writer(write_file)
         writer.writerows(user_list)
     write_file.close()
+    print("Report has been generated: %s" % file_name)
 
 def main():
     parser = argparse.ArgumentParser()
