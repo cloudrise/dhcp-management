@@ -3,7 +3,7 @@ import argparse
 import os
 import csv
 import datetime
-import private.config ## edit here to config
+import private.config
 
 
 def get_all_users():
@@ -19,6 +19,7 @@ def get_all_users():
     return user_list
 
 def format_printable_mac(mac):
+    # Format MAC from AABBCC112233 to AA:BB:CC:11:22:33
     mac = str.upper(mac)
     return ':'.join(mac[i:i+2] for i in range(0, len(mac), 2))
 
@@ -28,10 +29,12 @@ def print_user_details():
         print(user[0], user[1], user[2], format_printable_mac(user[3]), user[4])
 
 def add_new_user():
+    # Inputs
     first_name = input("First name: ")
     last_name = input("Last name: ")
     mac = input("MAC: ")
 
+    # Insert query
     query = ("INSERT INTO clients" # TO DO change to table_name
              "(first_name, last_name, ip, mac)" 
              "VALUES (%(first_name)s, %(last_name)s, IFNULL((SELECT MAX(t.ip)+1 FROM clients AS t), INET_ATON(%(start_ip)s)), UNHEX(%(mac)s))")
@@ -43,22 +46,23 @@ def add_new_user():
         'mac' : mac
     }
 
+    # Open connection, execute query and commit changes
     connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
-
     cursor = connection.cursor()
-
     cursor.execute(query, data_query)
-
     connection.commit()
+
     cursor.close()
     connection.close()
 
 def get_active_users():
+    # Open SQL connection
     connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
     cursor = connection.cursor()
+
+    # Select all users
     query = ("SELECT id, first_name, last_name, hex(mac), inet_ntoa(ip) FROM %s WHERE is_active = 1" % private.config.TABLE_NAME)
     cursor.execute(query)
-
     user_list = cursor.fetchall()
 
     connection.close()
@@ -66,12 +70,11 @@ def get_active_users():
     return user_list
 
 def generate_user_list_file():
-    # remove_list = ("rm %s" % private.config.PATH_TO_USER_LIST_FILE)
-    # os.system(remove_list)
-
+    # Get all users
     print("Gettin users from database...")
     user_list = get_active_users()
 
+    # Open file and save dhcp clients list.
     user_list_file = open(private.config.PATH_TO_USER_LIST_FILE, "w")
     print("Creating new file %s" % private.config.PATH_TO_USER_LIST_FILE)
     user_id = 1
@@ -91,10 +94,12 @@ def generate_user_list_file():
     user_list_file.close()
     print("%i users has been added." % user_id)
 
+    # Restart DHCP service
     restart_dhcp = ("service isc-dhcp-server restart")
     os.system(restart_dhcp)
 
 def clean_user_list():
+    # Open SQL connection
     connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
     cursor = connection.cursor()
 
@@ -131,6 +136,8 @@ def generate_report():
             writer.writerow([user[0], user[1], user[2], user[4], format_printable_mac(user[3])]) # Id, First Name, Last Name, MAC, IP
     write_file.close()
     print("Report has been generated: %s" % file_name)
+
+    return file_name
 
 def main():
     parser = argparse.ArgumentParser()
