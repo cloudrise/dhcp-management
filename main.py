@@ -74,18 +74,22 @@ def generate_user_list_file():
 
     user_list_file = open(private.config.PATH_TO_USER_LIST_FILE, "w")
     print("Creating new file %s" % private.config.PATH_TO_USER_LIST_FILE)
+    user_id = 1
+
     for user in user_list:
         user_list_file.write("#######################################\n")
         user_list_file.write("# Name : " + user[1] + "\n")
         user_list_file.write("# Surname : " + user[2] + "\n")
-        user_list_file.write("host ID_B" + str(user[0]) + ".1\n")
+        user_list_file.write("host ID_B" + str(user_id) + ".1\n")
         user_list_file.write("{\n")
         user_list_file.write("hardware ethernet " + format_printable_mac(user[3]) + ";\n")
         user_list_file.write("fixed-address " + user[4] + ";\n")
         user_list_file.write("}\n\n")
-        print("\r%i" % user[0])
+        print("%i" % user[0], end='\r')
+        user_id = user_id + 1
             
     user_list_file.close()
+    print("%i users has been added." % user_id)
 
     restart_dhcp = ("service isc-dhcp-server restart")
     os.system(restart_dhcp)
