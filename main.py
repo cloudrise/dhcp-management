@@ -130,7 +130,7 @@ def generate_report():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", help="Select one of the following action: list")
+    parser.add_argument("action", help="Select one of the following action: list, add, restart, clean, report")
     args = parser.parse_args()
 
     if args.action == "list":
