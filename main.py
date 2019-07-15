@@ -33,7 +33,7 @@ def validate_mac_address(mac):
 def get_all_users():
     connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
     cursor = connection.cursor()
-    query = ("SELECT id, first_name, last_name, hex(mac), inet_ntoa(ip), last_modified FROM %s" % private.config.TABLE_NAME)
+    query = ("SELECT id, first_name, last_name, hex(mac), inet_ntoa(ip), last_modified, is_active FROM %s" % private.config.TABLE_NAME)
     user_list_to_print = []
     cursor.execute(query)
 
@@ -57,7 +57,7 @@ def format_printable_mac(mac):
 def print_user_details():
     user_list = get_all_users()
 
-    print(tabulate(user_list, headers=["Id", "Name", "Surname", "MAC", "IP", "Last modified"], tablefmt='orgtbl'))  
+    print(tabulate(user_list, headers=["Id", "Name", "Surname", "MAC", "IP", "Last modified", "Is Active"], tablefmt='orgtbl'))  
 
 def add_new_user():
     # Inputs
@@ -66,7 +66,7 @@ def add_new_user():
     mac = input("MAC: ")
 
     print_mac_vendor(mac)
-    
+
     if (validate_mac_address(mac)):
         # Insert query
         query = ("INSERT INTO clients" # TO DO change to table_name
