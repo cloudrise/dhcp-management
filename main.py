@@ -10,7 +10,7 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
-
+from tabulate import tabulate
 
 def get_all_users():
     connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
@@ -31,8 +31,7 @@ def format_printable_mac(mac):
 
 def print_user_details():
     user_list = get_all_users()
-    for user in user_list:
-        print(user[0], user[1], user[2], format_printable_mac(user[3]), user[4])
+    print(tabulate(user_list, headers=["Id", "Name", "Surname", "MAC", "IP"], tablefmt='orgtbl'))  
 
 def add_new_user():
     # Inputs
