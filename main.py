@@ -1,6 +1,7 @@
 import mysql.connector
 import argparse
 import os
+import re
 import csv
 import datetime
 import private.config
@@ -11,6 +12,17 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 from tabulate import tabulate
+
+def validate_mac_address(mac):
+    # Check MAC format
+    if (not re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower())):
+        print("Mac address format wrong.")
+        return False
+    # Check if second character is even
+    if (not ord(mac[1]) % 2 == 0):
+        print("Second character is not even.")
+        return False
+    return True
 
 def get_all_users():
     connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
@@ -47,26 +59,27 @@ def add_new_user():
     last_name = input("Last name: ")
     mac = input("MAC: ")
 
-    # Insert query
-    query = ("INSERT INTO clients" # TO DO change to table_name
-             "(first_name, last_name, ip, mac)" 
-             "VALUES (%(first_name)s, %(last_name)s, IFNULL((SELECT MAX(t.ip)+1 FROM clients AS t), INET_ATON(%(start_ip)s)), UNHEX(%(mac)s))")
-    data_query = {
-        'table_name' : private.config.TABLE_NAME,
-        'first_name' : first_name,
-        'last_name' : last_name,
-        'start_ip' : private.config.START_IP,
-        'mac' : mac
-    }
+    if (validate_mac_address(mac)):
+        # Insert query
+        query = ("INSERT INTO clients" # TO DO change to table_name
+                "(first_name, last_name, ip, mac)" 
+                "VALUES (%(first_name)s, %(last_name)s, IFNULL((SELECT MAX(t.ip)+1 FROM clients AS t), INET_ATON(%(start_ip)s)), UNHEX(%(mac)s))")
+        data_query = {
+            'table_name' : private.config.TABLE_NAME,
+            'first_name' : first_name,
+            'last_name' : last_name,
+            'start_ip' : private.config.START_IP,
+            'mac' : mac
+        }
 
-    # Open connection, execute query and commit changes
-    connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
-    cursor = connection.cursor()
-    cursor.execute(query, data_query)
-    connection.commit()
+        # Open connection, execute query and commit changes
+        connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
+        cursor = connection.cursor()
+        cursor.execute(query, data_query)
+        connection.commit()
 
-    cursor.close()
-    connection.close()
+        cursor.close()
+        connection.close()
 
 def get_active_users():
     # Open SQL connection
