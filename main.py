@@ -4,6 +4,12 @@ import os
 import csv
 import datetime
 import private.config
+import smtplib
+from os.path import basename
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import COMMASPACE, formatdate
 
 
 def get_all_users():
@@ -139,6 +145,40 @@ def generate_report():
 
     return file_name
 
+def send_monthly_report():
+    # Construct mail variables
+    now = datetime.datetime.now()
+    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+    mail_body = 'Lista IP wygenerowana ' + date_time
+
+    # Generate user list
+    user_list_file = generate_report()
+
+    # Construct message
+    msg = MIMEMultipart()
+    msg['From'] = private.config.SMTP_USERNAME
+    msg['To'] = private.config.MAIL_TO
+    msg['Date'] = formatdate(localtime=True)
+    msg['Subject'] = private.config.MAIL_SUBJECT
+
+    msg.attach(MIMEText(mail_body))
+
+    with open(user_list_file, "rb") as fil:
+        part = MIMEApplication(
+            fil.read(),
+            Name=basename(user_list_file)
+        )
+        # After the file is closed
+    part['Content-Disposition'] = 'attachment; filename="%s"' % basename(user_list_file)
+    msg.attach(part)
+
+
+    smtp = smtplib.SMTP(private.config.SMTP_SERVER, private.config.SMTP_PORT)
+    smtp.starttls()
+    smtp.login(private.config.SMTP_USERNAME, private.config.SMTP_PASSWORD)
+    smtp.sendmail(private.config.SMTP_USERNAME, private.config.MAIL_TO, msg.as_string())
+    smtp.close()
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("action", help="Select one of the following action: list, add, restart, clean, report")
@@ -154,6 +194,8 @@ def main():
         clean_user_list()
     elif args.action == "report":
         generate_report()
+    elif args.action == "email":
+        send_monthly_report()
 
 if __name__ == '__main__':
     main()
