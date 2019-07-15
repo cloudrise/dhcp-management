@@ -4,6 +4,7 @@ import os
 import re
 import csv
 import datetime
+import urllib.request
 import private.config
 import smtplib
 from os.path import basename
@@ -12,6 +13,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 from tabulate import tabulate
+
+def print_mac_vendor(mac):
+    url = "https://api.macvendors.com/" + mac 
+    response = urllib.request.urlopen(url).read()
+    print("Mac vendor: %s" % response)
 
 def validate_mac_address(mac):
     # Check MAC format
@@ -59,6 +65,8 @@ def add_new_user():
     last_name = input("Last name: ")
     mac = input("MAC: ")
 
+    print_mac_vendor(mac)
+    
     if (validate_mac_address(mac)):
         # Insert query
         query = ("INSERT INTO clients" # TO DO change to table_name
