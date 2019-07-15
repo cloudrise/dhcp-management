@@ -15,14 +15,21 @@ from tabulate import tabulate
 def get_all_users():
     connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
     cursor = connection.cursor()
-    query = ("SELECT id, first_name, last_name, hex(mac), inet_ntoa(ip) FROM %s" % private.config.TABLE_NAME)
+    query = ("SELECT id, first_name, last_name, hex(mac), inet_ntoa(ip), last_modified FROM %s" % private.config.TABLE_NAME)
+    user_list_to_print = []
     cursor.execute(query)
 
     user_list = cursor.fetchall()
 
     connection.close()
 
-    return user_list
+    # Convert tuples to list
+    for user in user_list:
+        user_list_to_print.append(list(user))
+    # Format MACs from AAAAAA to AA:AA:AA
+    for user in user_list_to_print:
+        user[3] = format_printable_mac(user[3])
+    return user_list_to_print
 
 def format_printable_mac(mac):
     # Format MAC from AABBCC112233 to AA:BB:CC:11:22:33
@@ -31,7 +38,8 @@ def format_printable_mac(mac):
 
 def print_user_details():
     user_list = get_all_users()
-    print(tabulate(user_list, headers=["Id", "Name", "Surname", "MAC", "IP"], tablefmt='orgtbl'))  
+
+    print(tabulate(user_list, headers=["Id", "Name", "Surname", "MAC", "IP", "Last modified"], tablefmt='orgtbl'))  
 
 def add_new_user():
     # Inputs
