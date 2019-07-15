@@ -30,7 +30,7 @@ def validate_mac_address(mac):
         return False
     # Check if second character is even
     if (not ord(mac[1]) % 2 == 0):
-        print("Second character is not even.")
+        print("Second character is not even. Multicast MAC address.")
         return False
     return True
 
