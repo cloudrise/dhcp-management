@@ -219,7 +219,11 @@ def main():
     if args.action == "list":
         print_user_details()
     elif args.action == "add":
-        add_new_user()
+        while True:
+            add_new_user()
+            add_again = input("Would you like to add next person? [Y/y]: ")
+            if (not (add_again == "y" or add_again == "Y")):
+                break
     elif args.action == "restart":
         generate_user_list_file()
     elif args.action == "clean":
