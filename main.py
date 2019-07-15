@@ -1,12 +1,5 @@
-import mysql.connector
-import argparse
-import os
-import re
-import csv
-import datetime
-import urllib.request
+import mysql.connector, argparse, os, re, csv, datetime, smtplib, urllib.request
 import private.config
-import smtplib
 from os.path import basename
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -213,7 +206,7 @@ def send_monthly_report():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", help="Select one of the following action: list, add, restart, clean, report")
+    parser.add_argument("action", help="Select one of the following action: list, add, restart, clean, report, email")
     args = parser.parse_args()
 
     if args.action == "list":
