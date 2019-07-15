@@ -16,7 +16,11 @@ from tabulate import tabulate
 
 def print_mac_vendor(mac):
     url = "https://api.macvendors.com/" + mac 
-    response = urllib.request.urlopen(url).read()
+    try:
+        response = urllib.request.urlopen(url).read()
+    except Exception as e:
+        print("Can't find MAC vendor.", e)
+        return
     print("Mac vendor: %s" % response)
 
 def validate_mac_address(mac):
