@@ -90,7 +90,7 @@ def generate_user_list_file():
     # Open file and save dhcp clients list.
     user_list_file = open(private.config.PATH_TO_USER_LIST_FILE, "w")
     print("Creating new file %s" % private.config.PATH_TO_USER_LIST_FILE)
-    user_id = 1
+    user_id = 0
 
     for user in user_list:
         user_list_file.write("#######################################\n")
