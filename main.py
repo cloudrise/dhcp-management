@@ -146,7 +146,7 @@ def generate_report():
     with open(file_name, 'w', newline='') as write_file:
         writer = csv.writer(write_file)
         for user in user_list:
-            writer.writerow([user[0], user[1], user[2], user[4], format_printable_mac(user[3])]) # Id, First Name, Last Name, MAC, IP
+            writer.writerow([user[0], user[1], user[2], user[4], user[3]]) # Id, First Name, Last Name, MAC, IP
     write_file.close()
     print("Report has been generated: %s" % file_name)
 
