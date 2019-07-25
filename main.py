@@ -1,4 +1,4 @@
-import mysql.connector, argparse, os, re, csv, datetime, smtplib, urllib.request
+import mysql.connector, argparse, os, re, csv, datetime, smtplib, urllib.request, sys
 import private.config
 from os.path import basename
 from email.mime.application import MIMEApplication
@@ -21,7 +21,7 @@ def validate_mac_address(mac):
     if (not re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower())):
         print("Mac address format wrong.")
         return False
-    # Check if second character is even
+    # Check if second character is not even
     if (not ord(mac[1]) % 2 == 0):
         print("Second character is not even. Multicast MAC address.")
         return False
@@ -204,6 +204,45 @@ def send_monthly_report():
     smtp.sendmail(private.config.SMTP_USERNAME, private.config.MAIL_TO, msg.as_string())
     smtp.close()
 
+def edit_user():
+    user_id  = input("Enter user ID which you want to edit: ")
+    user = get_user_by_id(user_id)
+
+    print(user)
+
+    mac = input("MAC: ")
+
+    print_mac_vendor(mac)
+
+    if (validate_mac_address(mac)):
+        # Insert query
+        query = ("UPDATE clients SET mac = UNHEX('%s'), last_modified = CURRENT_TIMESTAMP WHERE id=%s" % (mac, user_id))
+
+        # Open connection, execute query and commit changes
+        connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
+        cursor = connection.cursor()
+        cursor.execute(query)
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        user = get_user_by_id(user_id)
+        print(user)
+
+
+def get_user_by_id(user_id):
+    connection = mysql.connector.connect(**private.config.DATABASE_CONFIG)
+    cursor = connection.cursor()
+    query = ("SELECT id, first_name, last_name, hex(mac), inet_ntoa(ip), last_modified, is_active FROM %s WHERE id=%s" % (private.config.TABLE_NAME, user_id))
+    cursor.execute(query)
+
+    user = cursor.fetchall()
+
+    connection.close()
+
+    return user
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("action", help="Select one of the following action: list, add, restart, clean, report, email")
@@ -225,6 +264,8 @@ def main():
         generate_report()
     elif args.action == "email":
         send_monthly_report()
+    elif args.action == "edit":
+        edit_user()
 
 if __name__ == '__main__':
     main()
